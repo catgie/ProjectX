@@ -9,6 +9,13 @@ import Foundation
 import DequeModule
 import Utils
 
+// MARK: - DeviceCommManager
+/*
+ Gère la file d'attente des requêtes et le traitement des réponses provenant
+ du périphérique. Utilisez `sendRequest` pour envoyer une commande et recevez
+ le résultat via les callbacks associés.
+*/
+
 public typealias RequestCompletion = (_ request: Request, _ result: Any?,  _ timeout: Bool) -> Void
 
 public typealias NotificationCallback = (_ notification: Any) -> Void
@@ -25,6 +32,10 @@ public protocol DeviceResponseErrorHandler: AnyObject {
     func onError(_ error: ResponseError)
 }
 
+/*
+ Gestionnaire principal des communications avec l'appareil.
+ Il sérialise les requêtes et distribue les réponses ou notifications.
+*/
 open class DeviceCommManager {
     
     private let requestHandler: RequestHandler
@@ -65,16 +76,28 @@ open class DeviceCommManager {
     }
     
     
+    /*
+     Initialise les gestionnaires de requêtes et de réponses.
+     */
     public init() {
         self.requestHandler = RequestHandler()
         self.responseHandler = ResponseHandler()
         self.responseHandler.delegate = self
     }
     
+    /*
+     Envoie une requête sans attendre de résultat spécifique.
+     */
     open func sendRequest(_ request: Request) {
         sendRequest(request, completion: nil)
     }
     
+    /*
+     Envoie une requête avec un callback optionnel exécuté à la réception de la réponse.
+     - Parameters:
+       - request: requête à transmettre.
+       - completion: bloc appelé avec le résultat ou en cas de timeout.
+     */
     open func sendRequest(_ request: Request, completion: RequestCompletion?) {
         
         if let completion = completion {
@@ -106,6 +129,11 @@ open class DeviceCommManager {
     }
     
     @discardableResult
+    /*
+     Annule une requête spécifique si elle se trouve dans la file d'attente.
+     - Parameter request: requête à supprimer.
+     - Returns: vrai si la requête a été retirée.
+     */
     public func cancelRequest(_ request: Request) -> Bool {
         requestLock.lock()
         if let index = requestQueue.firstIndex(of: request) {
@@ -121,6 +149,9 @@ open class DeviceCommManager {
         return false
     }
     
+    /*
+     Vide la file d'attente et annule les timeouts associés.
+     */
     public func cancelAllRequests() {
         requestLock.lock()
         while let request = requestQueue.popFirst() {
@@ -148,10 +179,16 @@ open class DeviceCommManager {
         }
     }
     
+    /*
+     Traite les données brutes reçues du périphérique.
+     */
     public func handleData(_ data: Data) {
         responseHandler.handleFrameData(data)
     }
-    
+
+    /*
+     Réinitialise les files d'attente ainsi que les gestionnaires internes.
+     */
     public func reset() {
         cancelAllRequests()
         requestHandler.reset()
@@ -159,37 +196,63 @@ open class DeviceCommManager {
     }
     
     // MARK: - Device Info
-    
+    /*
+     Enregistre un gestionnaire pour les informations renvoyées par l'appareil.
+     - Parameters:
+       - deviceInfoType: identifiant de l'information.
+       - callableType: type capable de décoder la réponse.
+       - callback: bloc exécuté avec l'objet décodé.
+     */
     public func registerDeviceInfoCallback<T: PayloadHandler>(_ deviceInfoType: UInt8, callableType: T.Type, callback: @escaping DeviceInfoCallback) {
         deviceInfoHandlers[deviceInfoType] = (callableType, callback)
     }
-    
+
+    /*
+     Supprime le gestionnaire associé à un type d'information.
+     */
     public func unregisterDeviceInfoCallback(_ deviceInfoType: UInt8) {
         deviceInfoHandlers[deviceInfoType] = nil
     }
     
     // MARK: - Notification
-    
+    /*
+     Permet de recevoir des notifications émanant de l'appareil.
+     - Parameters:
+       - notifyType: identifiant de la notification.
+       - callableType: type permettant de décoder les données.
+       - callback: bloc exécuté lorsqu'une notification est reçue.
+     */
     public func registerNotificationCallback<T: PayloadHandler>(_ notifyType: UInt8, callableType: T.Type, callback: @escaping NotificationCallback) {
         notificationHandlers[notifyType] = (callableType, callback)
     }
-    
+
+    /*
+     Supprime le gestionnaire de notification pour un type donné.
+     */
     public func unregisterNotificationCallback(_ notifyType: UInt8) {
         notificationHandlers[notifyType] = nil
     }
 
     // MARK: - Response
-
+    /*
+     Associe un type de décodage à une commande de réponse.
+     */
     public func registerResponseCallable<T: PayloadHandler>(command: UInt8, callableType: T.Type) {
         responseCallableTypeMap[command] = callableType
     }
-    
+
+    /*
+     Enregistre plusieurs associations commande/type en une fois.
+     */
     public func registerResponseCallables(_ entries: [UInt8: PayloadHandler.Type]) {
         for (command, callableType) in entries {
             responseCallableTypeMap[command] = callableType
         }
     }
-    
+
+    /*
+     Supprime l'association pour une commande donnée.
+     */
     public func unregisterResponseCallable(command: UInt8) {
         responseCallableTypeMap[command] = nil
     }
@@ -199,7 +262,9 @@ open class DeviceCommManager {
 // MARK: - 设备信息处理
 
 public extension DeviceCommManager {
-    
+    /*
+     Décode une information de type donné et exécute le callback enregistré.
+     */
     func processDeviceInfo(type: UInt8, data: Data) {
         
         if let handler = deviceInfoHandlers[type],
@@ -217,6 +282,9 @@ public extension DeviceCommManager {
         }
     }
     
+    /*
+     Parcourt un bloc de données contenant plusieurs informations TLV.
+     */
     func processDeviceInfoData(_ data: Data) {
         let bb = ByteBuffer.wrap(data)
         
@@ -238,7 +306,9 @@ public extension DeviceCommManager {
 // MARK: - 设备通知处理
 
 fileprivate extension DeviceCommManager {
-    
+    /*
+     Traite une notification unique en invoquant le callback correspondant.
+     */
     private func processNotification(command: UInt8, data: Data) {
         
         if let handler = notificationHandlers[command],
@@ -256,6 +326,9 @@ fileprivate extension DeviceCommManager {
         }
     }
     
+    /*
+     Décompose un bloc TLV contenant plusieurs notifications.
+     */
     private func processNotificationData(_ data: Data) {
         
         let bb = ByteBuffer.wrap(data)
@@ -278,7 +351,9 @@ fileprivate extension DeviceCommManager {
 // MARK: - ResponseHandlerDelegate
 
 extension DeviceCommManager: ResponseHandlerDelegate {
-    
+    /*
+     Réception d'une notification décodée par le ResponseHandler.
+     */
     public func didReceiveNotification(_ notification: Notification) {
         
         let notificationCommand = notification.getCommand()
@@ -292,6 +367,10 @@ extension DeviceCommManager: ResponseHandlerDelegate {
         }
     }
     
+    /*
+     Appelé lorsqu'une réponse complète est reçue.
+     Gère la file d'attente et exécute le callback adéquat.
+     */
     public func didReceiveResponse(_ response: Response) {
         currentRequest = nil
         // Handle next request when received response
@@ -345,6 +424,9 @@ extension DeviceCommManager: ResponseHandlerDelegate {
         }
     }
     
+    /*
+     Relaye les erreurs de décodage au gestionnaire externe.
+     */
     public func onError(_ error: ResponseError) {
         responseErrorHandler?.onError(error)
     }

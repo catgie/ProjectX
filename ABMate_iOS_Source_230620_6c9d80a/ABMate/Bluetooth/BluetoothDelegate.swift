@@ -8,60 +8,61 @@
 import Foundation
 import CoreBluetooth
 
-/**
- *  Bluetooth Model Delegate
- */
+// MARK: - BluetoothDelegate
+/*
+ Protocole de délégation utilisé pour recevoir les événements Bluetooth.
+ Implémentez ces méthodes optionnelles pour suivre l'état du Bluetooth,
+ découvrir des périphériques et gérer les connexions.
+*/
 @objc public protocol BluetoothDelegate : NSObjectProtocol {
     
-    /**
-     The callback function when the bluetooth has updated.
-     
-     - parameter state: The newest state
+    /*
+     Appelé lorsque l'état du Bluetooth change.
+     - Parameter state: nouvel état du manager.
      */
     @objc optional func didUpdateState(_ state: CBManagerState)
     
-    /**
-     The callback function when the bluetooth scanning is stopped.
+    /*
+     Indique que l'opération de scan a été stoppée.
      */
     @objc optional func didStopScanning()
     
-    /**
-     The callback function when peripheral has been found.
-     
-     - parameter peripheral:        The peripheral has been found.
-     - parameter advertisementData: The advertisement data.
-     - parameter RSSI:              The signal strength.
+    /*
+     Appelé lorsqu'un périphérique est découvert.
+     - Parameters:
+       - peripheral: périphérique détecté.
+       - advertisementData: données d'annonce.
+       - RSSI: puissance du signal.
      */
     @objc optional func didDiscoverPeripheral(_ peripheral: CBPeripheral, advertisementData: [String : Any], RSSI: NSNumber)
     
-    /**
-     The callback function when central manager connected the peripheral successfully.
-     
-     - parameter connectedPeripheral: The peripheral which connected successfully.
+    /*
+     Signale qu'une connexion a été établie avec succès.
+     - Parameter connectedPeripheral: le périphérique connecté.
      */
     @objc optional func didConnectedPeripheral(_ connectedPeripheral: CBPeripheral)
     
-    /**
-     The callback function when central manager failed to connect the peripheral.
-     
-     - parameter connectedPeripheral: The peripheral which connected failure.
-     - parameter error:               The connected failed error message.
+    /*
+     Indique qu'une tentative de connexion a échoué.
+     - Parameters:
+       - peripheral: périphérique concerné.
+       - error: erreur éventuelle.
      */
     @objc optional func failToConnectPeripheral(_ peripheral: CBPeripheral, error: Error?)
     
-    /**
-    The callback function when the peripheral disconnected.
-
-    - parameter peripheral: The peripheral which provide this action
-    - parameter error:      The disconnected error message.
-    */
+    /*
+     Appelé lors de la déconnexion d'un périphérique.
+     - Parameters:
+       - peripheral: périphérique concerné.
+       - error: erreur éventuelle.
+     */
     @objc optional func didDisconnectPeripheral(_ peripheral: CBPeripheral, error: Error?)
 
-    /**
-    The callback function when the connection event did occur.
-
-    - parameter event:      The connection event occurs.
-    - parameter peripheral: The peripheral which has the event.
-    */
+    /*
+     Notifie un événement de connexion spécifique (iOS 13+).
+     - Parameters:
+       - event: type d'événement reçu.
+       - peripheral: périphérique concerné.
+     */
     @objc optional func connectionEventDidOccur(_ event: CBConnectionEvent, for peripheral: CBPeripheral)
 }
