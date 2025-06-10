@@ -81,7 +81,7 @@ class EqualizerView: UIView {
         let bandCount = gains.count
         
         for (index, bandNum) in gains.enumerated() {
-            // 频率标签
+            // Étiquette de fréquence
             let bandLabel = UILabel()
             #if DEBUG
                 bandLabel.backgroundColor = .blue.withAlphaComponent(0.3)
@@ -97,7 +97,7 @@ class EqualizerView: UIView {
                 make.top.equalToSuperview()
             }
             
-            // 滑动条
+            // Barre de défilement
             let bandSlider = UISlider()
             #if DEBUG
                 bandSlider.backgroundColor = .green.withAlphaComponent(0.3)
@@ -118,7 +118,7 @@ class EqualizerView: UIView {
             }
             bandSlider.transform = CGAffineTransform(rotationAngle: CGFloat(-Double.pi / 2))
             
-            // 值标签
+            // Étiquette de valeur
             let valueLabel = UILabel()
             #if DEBUG
                 valueLabel.backgroundColor = .red.withAlphaComponent(0.3)
@@ -208,7 +208,7 @@ class EqualizerView: UIView {
         
         touched[index] = false
         
-        // FIXME: 恢复touch之前的所有值?
+        // FIXME: restaurer toutes les valeurs précédentes ?
         
         checkIfAllStopped()
     }

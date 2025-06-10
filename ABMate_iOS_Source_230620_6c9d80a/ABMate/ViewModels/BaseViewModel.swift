@@ -17,7 +17,7 @@ class BaseViewModel {
     lazy var sharedDeviceRepo = DeviceRepository.shared
     lazy var deviceCommManager = sharedDeviceRepo.deviceCommManager
     
-    // MARK: - 连接设备
+    // MARK: - Connexion de l'appareil
     
     func connect(_ device: ABDevice) {
         sharedDeviceRepo.connect(device)
@@ -27,11 +27,11 @@ class BaseViewModel {
         sharedDeviceRepo.disconnect()
     }
     
-    // MARK: - 发送请求
+    // MARK: - Envoi de requêtes
     
     func checkIfResponseAllSuccess(results: [UInt8: Bool]) -> Bool {
         for (_, result) in results {
-            // 有一个错误就算失败
+            // Une seule erreur suffit à considérer l'opération comme échouée
             if !result {
                 return false
             }
@@ -41,7 +41,7 @@ class BaseViewModel {
     
     func checkIfResponseAtLeastOneSuccess(results: [UInt8: Bool]) -> Bool {
         for (_, result) in results {
-            // 有一个成功就算成功
+            // Un seul succès suffit à considérer l'opération comme réussie
             if result {
                 return true
             }
@@ -89,13 +89,13 @@ class BaseViewModel {
         sendRequestExpectAllSuccess(request, completion: completion)
     }
     
-    // MARK: - 当前连接设备
+    // MARK: - Appareil actuellement connecté
     
     var activeDevice: BehaviorRelay<ABDevice?> {
         return sharedDeviceRepo.activeDevice
     }
     
-    // MARK: - 获取信息
+    // MARK: - Récupération des informations
     
     var devicePower: BehaviorRelay<DevicePower?> {
         return sharedDeviceRepo.devicePower

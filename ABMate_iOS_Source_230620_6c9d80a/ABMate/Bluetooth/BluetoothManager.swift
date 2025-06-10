@@ -9,7 +9,8 @@ import Foundation
 import CoreBluetooth
 import Utils
 
-/// iOS蓝牙推荐使用单例，所以蓝牙管理不整合到库中。
+/// Sur iOS, la gestion du Bluetooth se fait via un singleton ;
+/// elle n'est donc pas intégrée directement à la bibliothèque.
 public class BluetoothManager: NSObject {
     
     weak var logger: LoggerDelegate? = DefaultLogger.shared
@@ -33,7 +34,7 @@ public class BluetoothManager: NSObject {
     
     // MARK: - Public API
     
-    /// 开始扫描蓝牙设备
+    /// Démarre la recherche d'appareils Bluetooth
     public func startScanning() {
         centralManager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey : true])
     }
@@ -112,7 +113,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
 
 extension CBManagerState: CustomDebugStringConvertible {
     
-    /// 蓝牙连接状态描述
+    /// Description de l'état de connexion Bluetooth
     public var debugDescription: String {
         switch self {
         case .unknown: return ".unknown"

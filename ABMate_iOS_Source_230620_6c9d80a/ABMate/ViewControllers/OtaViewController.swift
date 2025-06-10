@@ -89,13 +89,13 @@ class OtaViewController: UIViewController {
         
         let title = "fota_select_file".localized
         let alert = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
-        // 添加文件名
+        // Ajouter les noms de fichiers
         for fotUrl in fotUrls {
-            // 只显示文件名
+            // Afficher uniquement le nom du fichier
             let fileName = (fotUrl as NSURL).lastPathComponent
             
             alert.addAction(UIAlertAction(title: fileName, style: .default, handler: { action in
-                // 读取选择的文件
+                // Lire le fichier sélectionné
                 if let otaData = try? Data(contentsOf: fotUrl) {
                     if let checksum = otaData.checksum {
                         self.fileChecksum = checksum
@@ -104,7 +104,7 @@ class OtaViewController: UIViewController {
                     }
                     // Check if it's the same firmware
                     if !self.checkFWChecksum() {
-                        // 准备升级数据
+                        // Préparer les données de mise à jour
                         self.otaManager.setOtaData(otaData)
                         self.otaManager.initialize()
                         self.otaManager.prepareToUpdate()
@@ -122,7 +122,7 @@ class OtaViewController: UIViewController {
                 }
             }))
         }
-        // 添加取消
+        // Ajouter l'action d'annulation
         alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel, handler: nil))
         self.present(alert, animated: true)
     }
@@ -524,10 +524,10 @@ fileprivate extension OtaViewController {
 
 fileprivate extension Data {
     
-    /// 用于OTA的校验值
+    /// Checksum utilisé pour l'OTA
     var checksum: Data? {
         
-        // 大小不会小于固件的校验位置+长度
+        // La taille ne doit pas être inférieure à la position du checksum dans le firmware plus sa longueur
         if self.count >= OTA_FILE_CHECKSUM_POSITION + 4 {
             // Big endian to little endian
             var checksum = Data(count: 4)

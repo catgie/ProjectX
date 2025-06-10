@@ -39,7 +39,7 @@ class EQSettingCell: UICollectionViewCell {
         super.init(frame: frame)
         contentView.backgroundColor = .green.withAlphaComponent(0.3)
         
-        // 圆角
+        // Bords arrondis
         contentView.layer.cornerRadius = 8
         contentView.layer.masksToBounds = true
         
