@@ -40,7 +40,7 @@ class MultipointViewController: UIViewController {
     private func setupViews() {
         let containView = self.view!
         
-        // 先处理FunctionView
+        // Gérer d'abord la FunctionView
         
         functionView = UIView()
         containView.addSubview(functionView)
@@ -75,7 +75,7 @@ class MultipointViewController: UIViewController {
             enableSwitch.trailingAnchor.constraint(equalTo: functionView.trailingAnchor),
         ])
         
-        // 处理ContainView
+        // Gérer ensuite le ContainView
         
         descriptionLabel = {
             let label = UILabel()
@@ -126,7 +126,7 @@ class MultipointViewController: UIViewController {
         
         viewModel.deviceMultipointInfo.subscribeOnNext { [unowned self] in
             if let multipoint = $0 {
-                // 如果保存的本地地址为空，则设备数量为1的时候就是本机
+                // Si aucune adresse locale n'est enregistrée et qu'un seul appareil est présent, c'est celui de la machine
                 if UserSettings.localBluetoothAddress == nil,
                    multipoint.endpoints.count == 1 {
                     let address = multipoint.endpoints[0].address
@@ -147,32 +147,32 @@ class MultipointViewController: UIViewController {
         let multipoint = viewModel.deviceMultipointInfo.value
         
         var request: Request
-        // 如果是关闭，且连接不止一台设备，则需要同时下发断开另外设备的命令
-        // 目前只处理双设备连接
+        // Si la désactivation est demandée avec plusieurs appareils connectés, il faut aussi envoyer la commande de déconnexion
+        // Actuellement seule la connexion à deux appareils est gérée
         if !isOn, let multipoint, multipoint.endpoints.count > 1 {
             let endpoints = multipoint.endpoints
             
-            // 过滤掉本机地址
+            // Filtrer l'adresse locale
             
             if let localBluetoothAddress = UserSettings.localBluetoothAddress {
                 let filteredEndpoints = endpoints.filter { endpoint in
                     endpoint.address.compare(localBluetoothAddress, options: .caseInsensitive) != .orderedSame
                 }
-                // 取最后一个断开，理论上至少会有一个
+                // Prendre la dernière adresse déconnectée (il doit y en avoir au moins une)
                 let endpoint = filteredEndpoints.last!
                 request = MultipointRequest.disableRequest(addressToDisconnect: endpoint.addressBytes)
             } else {
-                // 过滤掉本机名称
+                // Filtrer le nom local
                 let localName = UIDevice.current.name
                 let filteredEndpoints = endpoints.filter { endpoint in
                     endpoint.bluetoothName.compare(localName, options: .caseInsensitive) != .orderedSame
                 }
-                // 过滤后如果有至少一个设备，取最后一个断开
+                // Après filtrage, s'il reste au moins un appareil, utiliser le dernier à déconnecter
                 if filteredEndpoints.count > 0 {
                     let endpoint = filteredEndpoints.last!
                     request = MultipointRequest.disableRequest(addressToDisconnect: endpoint.addressBytes)
                 } else {
-                    // 取最后一个断开
+                    // Utiliser la dernière adresse déconnectée
                     let endpoint = endpoints.last!
                     request = MultipointRequest.disableRequest(addressToDisconnect: endpoint.addressBytes)
                 }
@@ -210,7 +210,8 @@ extension MultipointViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        // 数据量小，直接实例化使用，不然需要使用detailTextLabel就得继承UITableViewCell创建新类
+        // Peu de données : on instancie directement UITableViewCell,
+        // sinon il faudrait sous-classer pour utiliser detailTextLabel
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "UITableViewCell")
         
         let endpoint = multipoint!.endpoints[indexPath.row]

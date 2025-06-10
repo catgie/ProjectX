@@ -10,7 +10,7 @@ import AVFoundation
 
 class Utils {
     
-    // MARK: - 获取FOT文件列表
+    // MARK: - Liste des fichiers FOT disponibles
     
     static let OTA_FILE_EXTENSION = "fot"
     
@@ -28,7 +28,7 @@ class Utils {
         return nil
     }
     
-    // MARK: - 获取音频输出端口信息
+    // MARK: - Informations sur la sortie audio
     
     static var audioOutputDevices: [AVAudioSessionPortDescription] {
         let session = AVAudioSession.sharedInstance()
@@ -45,8 +45,8 @@ class Utils {
     
     static var bluetoothAudioDeviceAddress: String? {
         guard let currentAudioOutputDevice = currentAudioOutputDevice else { return nil }
-        // 蓝牙音频设备uid格式为“XX:XX:XX:XX:XX:XX-tacl”
-        // 注意，苹果没有公开表明使用这个格式，所以目前在确定版本使用（iOS 15是OK的）
+        // Le format du uid des périphériques audio Bluetooth est "XX:XX:XX:XX:XX:XX-tacl"
+        // Attention : Apple n'a pas officialisé ce format, il fonctionne pour l'instant (iOS 15)
         let uid = currentAudioOutputDevice.uid
         return extractBluetootAddress(uid: uid)
     }
@@ -54,8 +54,8 @@ class Utils {
     static func extractBluetootAddress(uid: String) -> String? {
         let pattern = "([0-9A-F]{2}):([0-9A-F]{2}):([0-9A-F]{2}):([0-9A-F]{2}):([0-9A-F]{2}):([0-9A-F]{2})"
         guard let range = uid.range(of: pattern, options: .regularExpression) else { return nil }
-        var address = String(uid[range]) // 提取地址
-        address.removeAll { $0 == ":" }  // 去掉冒号
+        var address = String(uid[range]) // extrait l'adresse
+        address.removeAll { $0 == ":" }  // retire les deux-points
         return address
     }
     
@@ -76,7 +76,7 @@ class Utils {
         return Data(bytes)
     }
     
-    // MARK: - 设备名
+    // MARK: - Nom de l'appareil
     
     static let DEVICE_NAME_PREFIX = "AB_Mate"
     

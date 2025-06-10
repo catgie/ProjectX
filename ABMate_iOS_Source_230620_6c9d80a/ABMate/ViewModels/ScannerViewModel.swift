@@ -14,7 +14,7 @@ class ScannerViewModel: BaseViewModel {
     
     static let shared = ScannerViewModel()
     
-    // MARK: - 扫描发现的设备
+    // MARK: - Appareils découverts lors du scan
     
     func startScanning() {
         sharedDeviceRepo.startScanning()

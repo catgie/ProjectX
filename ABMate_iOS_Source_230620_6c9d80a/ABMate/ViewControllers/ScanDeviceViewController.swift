@@ -73,7 +73,7 @@ class ScanDeviceViewController: UIViewController {
                         self.exit()
                     }
                 } else {
-                    // 如果设备已经连上本机，则自动连接
+                    // Si l'appareil est déjà connecté à l'iPhone, se connecter automatiquement
                     if let earbuds = device as? ABEarbuds,
 //                       earbuds.isConnected,
                        earbuds.btAddress == Utils.bluetoothAudioDeviceAddress {
@@ -83,13 +83,13 @@ class ScanDeviceViewController: UIViewController {
                         return
                     }
                     
-                    // 查找设备是否已经在列表中
+                    // Vérifier si l'appareil est déjà présent dans la liste
                     if let index = self.discoveredDevices.firstIndex(of: device) {
-                        // 如果设备已经存在于列表，更新状态
+                        // Si l'appareil existe déjà dans la liste, mettre à jour son état
                         self.discoveredDevices.replaceSubrange(index...index, with: [device])
                         self.tableView.reloadData()
                     } else {
-                        // 如果设备不在列表，添加到列表
+                        // Sinon, ajouter l'appareil à la liste
                         self.discoveredDevices.append(device)
                         self.discoveredDevices.sort {
                             if let rssi1 = $0.rssiPercent, let rssi2 = $1.rssiPercent {
@@ -153,7 +153,7 @@ class ScanDeviceViewController: UIViewController {
         } else {
             scanIndicator = UIActivityIndicatorView(style: .white)
         }
-        // 如果有navigationController，则放到右上角显示，没有则放在视图中间
+        // S'il y a un navigationController, placer le bouton en haut à droite ; sinon le placer au centre
         if let _ = navigationController {
             startScanButton = UIBarButtonItem(barButtonSystemItem: .play, target: self, action: #selector(startScanningDeviceIfNeeded))
             stopScanButton = UIBarButtonItem(barButtonSystemItem: .pause, target: self, action: #selector(stopScanning))
@@ -165,7 +165,7 @@ class ScanDeviceViewController: UIViewController {
                 make.center.equalToSuperview()
             }
         }
-        // 隐藏
+        // Masquer
         scanIndicator.isHidden = true
         
         timeoutLabel = UILabel()
@@ -175,7 +175,7 @@ class ScanDeviceViewController: UIViewController {
         timeoutLabel.snp.makeConstraints { make in
             make.center.equalToSuperview()
         }
-        // 隐藏
+        // Masquer
         timeoutLabel.isHidden = true
         
         noticeLabel = UILabel()
@@ -185,10 +185,10 @@ class ScanDeviceViewController: UIViewController {
         noticeLabel.snp.makeConstraints { make in
             make.center.equalToSuperview()
         }
-        // 隐藏
+        // Masquer
         noticeLabel.isHidden = true
         
-        // 引导配对视图
+        // Vue d'aide au jumelage
         self.pairingGuideView = {
             let coverView = UIView(frame: UIScreen.main.bounds)
             coverView.backgroundColor = .black
@@ -262,7 +262,7 @@ class ScanDeviceViewController: UIViewController {
         // Name filtering
 //        guard let deviceName = Utils.currentAudioOutputDeviceName,
 //              deviceName.hasPrefix(Utils.DEVICE_NAME_PREFIX) else {
-//            // 提示需要先连接设备
+//            // Indique qu'il faut d'abord connecter l'appareil
 //            noticeLabel.isHidden = false
 //            tableView.isHidden = true
 //            scanIndicator.stopAnimating()
@@ -319,8 +319,8 @@ class ScanDeviceViewController: UIViewController {
         
         switch reason {
         case .newDeviceAvailable:
-            // 如果刚连接的音频设备是当前蓝牙设备，则直接退出（因为BLE已经连接）
-            // 如果还没有，则自动开启扫描，扫描程序会判断广播的BLE设备是否是已经连接的音频设备
+            // Si l'appareil audio connecté est celui de la connexion BLE actuelle, quitter directement
+            // Sinon, démarrer automatiquement le scan pour vérifier si l'appareil diffusé est déjà connecté
             if let earbuds = viewModel.activeDevice.value as? ABEarbuds,
                earbuds.btAddress == Utils.bluetoothAudioDeviceAddress {
                 DispatchQueue.main.async { self.exit() }
@@ -346,7 +346,7 @@ class ScanDeviceViewController: UIViewController {
     private func didEnterBackground() {
         stopScanning()
         
-        // 如果现在在配对过程中，先取消超时，待重新进入App之后再重新计时
+        // Si une procédure de jumelage est en cours, annuler le timeout et le relancer en revenant dans l'application
         if let pairingTimeoutHandler = pairingTimeoutHandler {
             pairingTimeoutHandler.cancel()
             self.pairingTimeoutHandler = nil
@@ -437,16 +437,16 @@ extension ScanDeviceViewController: UITableViewDelegate {
         // Only ABEarbuds for now
         if let earbuds = device as? ABEarbuds {
             if earbuds.isConnected {
-                // 理论上不会进到这里来，因为连接到本机的会自动连接，未连接到本机的不会添加到设备列表
+                // Théoriquement ce cas ne se produit pas : les appareils déjà connectés se reconnectent automatiquement et les autres ne sont pas listés
                 self.delegate?(device)
                 exit()
             } else {
                 if #available(iOS 13.2, *), device.supportCTKD {
-                    // 监听连接状态，连接后退出
-                    // 使用registerForConnectionEvents（需要把代理接口拉出来）
-                    // 或者监听蓝牙音频连接事件（目前使用这种）
+                    // Surveille l'état de connexion, puis sortir une fois connecté
+                    // registerForConnectionEvents peut être utilisé (via un delegate)
+                    // ou écouter l'événement de connexion audio Bluetooth (méthode actuelle)
                     
-                    // 直接连接，下一层会处理CTKD
+                    // Se connecter directement, le CTKD sera géré au niveau inférieur
                     viewModel.sharedDeviceRepo.connect(device)
                 } else {
                     startPairingGuide(device: device)
@@ -464,7 +464,7 @@ extension ScanDeviceViewController: UITableViewDelegate {
             self.showPairingGuideView()
             self.startPairingTimeout()
             
-            // 跳转到系统设置
+            // Ouvrir les réglages système
             #if DEBUG
                 #warning("The use of non-public APIs is not permitted on the App Store.")
                 UIApplication.shared.open(URL(string: "App-Prefs:root")!)
@@ -491,7 +491,7 @@ extension ScanDeviceViewController: UITableViewDelegate {
                                                     message: "pairing_timeout".localized,
                                                     preferredStyle: .alert)
             alertController.addAction(UIAlertAction(title: "ok".localized, style: .default, handler: { _ in
-                // FIXME: 是否需要重新开始扫描呢？
+                // FIXME : faut-il relancer le scan ?
 //                self.startScanningDeviceIfNeeded()
             }))
             self.present(alertController, animated: true)

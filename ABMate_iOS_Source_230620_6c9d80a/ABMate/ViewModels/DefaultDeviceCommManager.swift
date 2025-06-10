@@ -46,7 +46,7 @@ public class DefaultDeviceCommManager: DeviceCommManager {
     public let deviceAntiWindNoise: BehaviorRelay<Bool?> = BehaviorRelay(value: nil)
     public let deviceCapacities: BehaviorRelay<DeviceCapacities?> = BehaviorRelay(value: nil)
     
-    // Request结果（如果成功）反映到DeviceInfo
+    // Le résultat de la requête (en cas de succès) est appliqué au DeviceInfo
     public var enableRequestToDevInfo: Bool = true
     private var requestToDeviceInfoDict: [UInt8: UInt8] = [:]
     private var tlvRequestToDeviceInfoDict: [UInt8: [UInt8: UInt8]] = [:]
@@ -64,7 +64,7 @@ public class DefaultDeviceCommManager: DeviceCommManager {
         let requestCompletion: RequestCompletion = { [weak self] request, result, timeout in
             if let completion = completion {
                 completion(request, result, timeout)
-                // 处理完Response，再看要不要将结果反应到DevInfo
+                // Après avoir traité la réponse, décider de répercuter ou non le résultat sur DevInfo
                 if !timeout, let strongSelf = self, strongSelf.enableRequestToDevInfo {
                     self?.processRequestToDevInfo(request: request, result: result!)
                 }
@@ -84,7 +84,7 @@ public class DefaultDeviceCommManager: DeviceCommManager {
            let tlvResult = result as? TlvResponse {
             let tlvDataDict = tlvRequest.tlvDataDic
             
-            // Key，不同按键没有对应deviceInfo，需要特殊处理
+            // Les différentes touches n'ont pas toutes d'entrée DeviceInfo ; traitement spécial
             if let keyRequest = request as? KeyRequest {
                 let keyType = keyRequest.keyType
                 let keyFunction = keyRequest.keyFunction
@@ -96,9 +96,9 @@ public class DefaultDeviceCommManager: DeviceCommManager {
                 }
             } else {
                 for (subCommand, subResult) in tlvResult {
-                    // 如果命令执行成功
+                    // Si la commande est exécutée avec succès
                     if (subResult) {
-                        // 根据主命令，确定子命令对应的Info
+                        // Déterminer, d'après la commande principale, l'info correspondant à la sous-commande
                         if let tlvInfoType = getTlvDeviceInfoType(command: command, subCommand: subCommand),
                            let value = tlvDataDict[subCommand] {
                             processDeviceInfo(type: tlvInfoType, data: value)
@@ -182,7 +182,7 @@ public class DefaultDeviceCommManager: DeviceCommManager {
         }
     }
     
-    /// 注册回复数据处理类
+    /// Enregistre les classes de traitement des réponses
     private func registerDefaultResponseCallables() {
         
         registerResponseCallables([
@@ -209,8 +209,8 @@ public class DefaultDeviceCommManager: DeviceCommManager {
         ])
     }
     
-    /// 注册设备上传通知的处理类和回调
-    /// callableType可以替换成自己想要的处理方法和结果
+    /// Enregistre les gestionnaires et callbacks pour les notifications de l'appareil
+    /// La classe callableType peut être remplacée par votre propre implémentation
     private func registerDefaultNotificationCallables() {
         
         registerNotificationCallback(Command.NOTIFICATION_DEVICE_POWER, callableType: PowerPayloadHandler.self)           { self.devicePower.accept($0 as? DevicePower) }
@@ -235,8 +235,8 @@ public class DefaultDeviceCommManager: DeviceCommManager {
         registerNotificationCallback(Command.NOTIFICATION_ANTI_WIND_NOISE, callableType: BoolPayloadHandler.self)         { self.deviceAntiWindNoise.accept($0 as? Bool) }
     }
     
-    /// 注册获取设备信息的处理类和回调
-    /// callableType可以替换成自己想要的处理方法和结果
+    /// Enregistre les gestionnaires et callbacks pour récupérer les informations de l'appareil
+    /// La classe callableType peut être remplacée par votre propre implémentation
     private func registerDefaultDeviceInfoCallables() {
         
         registerDeviceInfoCallback(Command.INFO_DEVICE_POWER, callableType: PowerPayloadHandler.self)                   { self.devicePower.accept($0 as? DevicePower) }

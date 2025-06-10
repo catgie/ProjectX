@@ -50,9 +50,9 @@ class FunctionViewController: UIViewController {
     private var ledSwitch: UISwitch!
     private var findDeviceSwitch: UISwitch!
     
-    // 用来控制支持功能的显示
+    // Permet de contrôler l'affichage des fonctions disponibles
     private var ancLayout: UIView!
-    private var bassEngineLayout: UIView! // TODO: 和bassEngineValueSlider合并
+    private var bassEngineLayout: UIView! // TODO : fusionner avec bassEngineValueSlider
     private var spatialAudioLayout: UIView!
     private var antiWindNoiseLayout: UIView!
     
@@ -323,7 +323,7 @@ class FunctionViewController: UIViewController {
     
     @objc
     private func clickEqualizer() {
-        // 如果RemoteEqSettings为空，使用APP本地EQ设置
+        // Si RemoteEqSettings est vide, utiliser les réglages EQ locaux de l'application
         // If RemoteEqSettings is nil, use App local EQ Settings
         if viewModel.deviceRemoteEqSettings.value == nil {
             let vc = EqualizerViewController()
@@ -377,7 +377,7 @@ class FunctionViewController: UIViewController {
     
     @objc
     private func clickRenameDevice() {
-        // 显示改名弹框
+        // Afficher la boîte de dialogue de renommage
         let title = "device_name".localized
         let message = "device_rename_tip".localized
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -389,7 +389,7 @@ class FunctionViewController: UIViewController {
             if deviceName.isEmpty {
                 self.presentAlert(title: nil, message: "device_name_empty_alert".localized)
             } else {
-                // 发送改名命令
+                // Envoyer la commande de renommage
                 let request = BluetoothNameRequest(deviceName)
                 self.sendRequestAndWaitSuccess(request) { [weak self] result, timeout in
                     if !timeout, result! {
@@ -502,7 +502,7 @@ class FunctionViewController: UIViewController {
 
 extension Array<UIView> {
     
-    /// 生成功能组
+    /// Génère un groupe de fonctions
     var functionGroup: UIView {
         let stackView = UIStackView(arrangedSubviews: self)
         stackView.axis = .vertical
@@ -546,7 +546,7 @@ extension FunctionViewController {
     private var functionRoundCornerRadius: CGFloat { 4 }
     private var groupRoundCornerRadius: CGFloat { 8 }
     
-    /// 生成箭头
+    /// Créé une flèche
     private func newArrowLabel() -> UILabel {
         let label = UILabel()
         label.text = ">" // ">" or Image
@@ -555,7 +555,7 @@ extension FunctionViewController {
         return label
     }
     
-    /// 在View中放置箭头
+    /// Place la flèche dans la vue
     private func layoutArrowInView(_ view: UIView) {
         let label = newArrowLabel()
         view.addSubview(label)
@@ -565,8 +565,8 @@ extension FunctionViewController {
         }
     }
     
-    /// 按键功能单个条目视图
-    /// 输出大小确定的视图
+    /// Vue d'un seul élément de fonction de touche
+    /// Vue de taille fixe
     private func newKeyActionView(nameLabel functionNameLabel: UILabel, indicatorView: UIView?) -> UIView {
         functionNameLabel.textAlignment = .center
         functionNameLabel.font = functionNameLabel.font.withSize(15)
@@ -605,7 +605,7 @@ extension FunctionViewController {
         return containerView
     }
     
-    /// 按键功能单个类型视图
+    /// Vue pour un type de fonction de touche
     private func newKeyFunctionItem(
         title: String?,
         actionView1 keyActionView1: UIView,
@@ -657,7 +657,7 @@ extension FunctionViewController {
         return containerView
     }
     
-    /// 功能条目，传入UILabel
+    /// Élément fonction, avec UILabel en paramètre
     private func newFunctionItem(title: String, actionView: UIView?, label descriptionLabel: UILabel?) -> UIView {
         let containerView = UIView()
         containerView.roundCorners(radius: functionRoundCornerRadius)
@@ -710,7 +710,7 @@ extension FunctionViewController {
         return containerView
     }
     
-    /// 功能条目，传入String
+    /// Élément fonction, avec une chaîne en paramètre
     private func newFunctionItem(title: String, actionView: UIView?, description: String?) -> UIView {
         var descriptionLabel: UILabel!
         
@@ -722,7 +722,7 @@ extension FunctionViewController {
         return newFunctionItem(title: title, actionView: actionView, label: descriptionLabel)
     }
     
-    /// 整个组布局
+    /// Disposition de l'ensemble du groupe
     private func newFunctionGroup(title: String?, subView: UIView?) -> UIView {
         let containerView = UIView()
         containerView.roundCorners(radius: groupRoundCornerRadius)
@@ -835,7 +835,7 @@ extension FunctionViewController {
         
         // MARK: Key
         
-        // 位置
+        // Position
         let leftLabel = UILabel()
         leftLabel.textAlignment = .center
         leftLabel.text = "key_function_left".localized
@@ -966,7 +966,7 @@ extension FunctionViewController {
         let deviceContainerView = newFunctionGroup(title: nil, subView: deviceStackView)
         containerView.addArrangedSubview(deviceContainerView)
         
-        // 用来控制支持功能的显示
+        // Sert à contrôler l'affichage des fonctionnalités disponibles
         ancLayout = ancContainerView
         bassEngineLayout = bassEngineFunctionView
         spatialAudioLayout = spatialAudioFunctionView
@@ -994,12 +994,12 @@ fileprivate extension FunctionViewController {
             return
         }
         
-        // TODO: 加上发送等待画面
+        // TODO : ajouter un écran d'attente pendant l'envoi
         startWaitingResponse()
         
         viewModel.sendRequest(request) { [weak self] result, timeout in
             
-            // todo: 解除发送等待
+            // todo : retirer l'écran d'attente
             self?.stopWaitingResponse()
             
             if timeout {

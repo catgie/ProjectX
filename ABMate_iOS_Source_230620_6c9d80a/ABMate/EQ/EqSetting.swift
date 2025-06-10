@@ -9,7 +9,8 @@ import Foundation
 
 class EqSetting {
     
-    public static let EQUALIZER_VIEW_MAX_VALUE: Int = 12 // 均衡器±最大增益
+    /// Gain maximal (+/-) pour l'égaliseur
+    public static let EQUALIZER_VIEW_MAX_VALUE: Int = 12
     
     var name: String
     var gains: [Int8]

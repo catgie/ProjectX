@@ -104,7 +104,7 @@ public class ABEarbuds: ABDevice {
     
     public override func startAuth() {
         if authenticationState == .idle {
-            // TODO: 开始认证
+            // TODO : démarrer l'authentification
         } else if authenticationState == .pass {
             connectionStateCallback?.onReceiveAuthResult(device: self, passed: true)
         }
@@ -140,7 +140,7 @@ public class ABEarbuds: ABDevice {
     
     public override func triggerCTKD() {
         guard supportCTKD, let ctkdCharacteristic = ctkdCharacteristic else { return }
-        // 固件端通过写ctkdCharacteristic触发CTKD
+        // Le firmware déclenche le CTKD en écrivant dans la caractéristique
         let data: Data = "CTKD".data(using: .utf8)!
         peripheral.writeValue(data, for: ctkdCharacteristic, type: .withResponse)
     }

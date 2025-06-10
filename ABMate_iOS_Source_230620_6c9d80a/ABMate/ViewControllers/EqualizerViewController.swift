@@ -12,7 +12,7 @@ import SnapKit
 import Utils
 import CoreData
 
-/// EQ设置存储在App的时候使用
+/// À utiliser lorsque les réglages d'EQ sont stockés dans l'application
 /// Use this when EQ settings are stored in App
 class EqualizerViewController: UIViewController {
     
@@ -47,7 +47,7 @@ class EqualizerViewController: UIViewController {
         loadCustomEqSettings()
         eqSettingsList = allEQSettings
         
-        // 获取最新EQ配置
+        // Récupérer la configuration EQ la plus récente
         viewModel.sendRequest(DeviceInfoRequest(Command.INFO_EQ_SETTING))
     }
     
@@ -177,13 +177,13 @@ extension EqualizerViewController: UICollectionViewDataSource {
         cell.isEditing = eqSetting.isCustom && isEditing
         
         if eqSetting != PresetEqSetting.eqSettingAdd {
-            // 配置删除按键
+            // Configure le bouton de suppression
             if let eqSavedSettings = eqSavedSettings, eqSetting.isCustom {
                 let indexOfCustom = indexPath.row - PresetEqSetting.allPresetEqSettings.count
                 cell.deleteButton.associatedEntity = eqSavedSettings[indexOfCustom]
             }
             cell.deleteButton.addTarget(self, action: #selector(deleteEQSetting(_:)), for: .touchUpInside)
-            // 显示目前匹配的EQ
+            // Met en surbrillance l'EQ actuellement appliqué
             cell.isSelected = eqView.gains == eqSetting.gains
         }
         
@@ -207,10 +207,10 @@ extension EqualizerViewController: UICollectionViewDelegateFlowLayout {
             return
         }
         
-        // 设置选择的EQ
+        // Appliquer l'EQ sélectionné
         let eqSetting = eqSettingsList[indexPath.row]
         if eqSetting == PresetEqSetting.eqSettingAdd {
-            // 存储到永久存储
+            // Sauvegarder dans le stockage permanent
             let title = "equalizer_eq_name".localized
             let message = "equalizer_eq_name_tip".localized
             let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -233,7 +233,7 @@ extension EqualizerViewController: UICollectionViewDelegateFlowLayout {
             let gainLevels = eqSetting.gains
             eqView.setValues(gainLevels)
             
-            // 发送设置请求
+            // Envoyer la requête de configuration
             let request: EqRequest
             if eqSetting.isCustom {
                 let customModeIndex = UInt8(indexPath.row - PresetEqSetting.allPresetEqSettings.count)
@@ -343,7 +343,7 @@ extension EqualizerViewController {
 
 fileprivate extension EqualizerViewController {
     
-    /// 所有Preset和Custom的EQSetting，和ADD
+    /// Tous les réglages EQ préréglés et personnalisés ainsi que ADD
     var allEQSettings: [EqSetting] {
         var settings = allPresetAndCustomEQSettings
         if indexOfEQSetting(eqView.gains) == nil && !isEditing {
@@ -352,12 +352,12 @@ fileprivate extension EqualizerViewController {
         return settings
     }
     
-    /// 所有Preset和Custom的EQSetting
+    /// Tous les réglages EQ préréglés et personnalisés
     var allPresetAndCustomEQSettings: [EqSetting] {
         return PresetEqSetting.allPresetEqSettings + allCustomEQSettings
     }
     
-    /// 所有Custom的EQSetting
+    /// Tous les réglages EQ personnalisés
     var allCustomEQSettings: [EqSetting] {
         return customEqSettings
     }

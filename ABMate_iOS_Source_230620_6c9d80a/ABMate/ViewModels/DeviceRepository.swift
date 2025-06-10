@@ -168,7 +168,7 @@ class DeviceRepository: NSObject {
     }
     
     private func onDisconnected() {
-        // 释放掉正在认证的设备
+        // Libère l'appareil actuellement en cours d'authentification
         if let device = preparingDevice {
             device.connectionStateCallback = nil
             device.dataDelegate = nil
@@ -176,7 +176,7 @@ class DeviceRepository: NSObject {
             preparingDevice = nil
         }
         
-        // 释放当前活跃设备
+        // Libère l'appareil actif
         if let activeDevice = _activeDevice {
             activeDevice.connectionStateCallback = nil
             activeDevice.dataDelegate = nil
@@ -187,7 +187,7 @@ class DeviceRepository: NSObject {
         deviceCommManager.commDelegate = nil
         deviceCommManager.responseErrorHandler = nil
         deviceCommManager.reset()
-        // 重置设备状态
+        // Réinitialise l'état de l'appareil
         resetDeviceStatus()
     }
     
@@ -204,7 +204,7 @@ extension DeviceRepository: BluetoothDelegate {
             // Listen bluetooth connection events
 //            if #available(iOS 13.0, *) {
 //                let ABMateServiceUUID = CBUUID(string: "FDB3")
-//                self.bluetoothManager.registerForConnectionEvents(options: [.serviceUUIDs: ABMateServiceUUID]) // TODO: options未定，预留
+//                self.bluetoothManager.registerForConnectionEvents(options: [.serviceUUIDs: ABMateServiceUUID]) // TODO : options à définir
 //            }
             
             if isOpened {
@@ -231,13 +231,13 @@ extension DeviceRepository: BluetoothDelegate {
             
 //            logger?.v(.deviceRepository, "\(deviceBeacon)")
             
-            // 如果是耳机广播
+            // S'il s'agit d'une annonce des écouteurs
             if let earbudsBeacon = deviceBeacon as? EarbudsBeacon {
-                // 如果广播里包含的地址和当前连接的音频设备相同（理所当然isConnected==true）
-                // 或者未连接
+                // Si l'adresse diffusée correspond à celle de l'appareil audio actuellement connecté
+                // ou si l'appareil n'est pas connecté
                 if (earbudsBeacon.btAddress == Utils.bluetoothAudioDeviceAddress) || !earbudsBeacon.isConnected {
-                    // 如果设备已经存在于列表，则更新状态
-                    // 否则列表添加新设备
+                    // Si l'appareil existe déjà dans la liste, mettre à jour son état
+                    // Sinon ajouter l'appareil à la liste
                     if let device = _discoveredDevices.first(where: { $0.peripheral == peripheral }) {
                         device.updateDeviceStatus(deviceBeacon: earbudsBeacon)
                         device.rssi = RSSI.intValue
@@ -318,8 +318,7 @@ extension DeviceRepository: ConnectionStateCallback {
         deviceCommManager.commDelegate = device
         deviceCommManager.responseErrorHandler = self
         
-        // 获取必要的信息
-        // Get necessary infomation
+        // Récupère les informations nécessaires
         requireNecessaryInfomation()
     }
     
@@ -338,7 +337,7 @@ extension DeviceRepository: ConnectionStateCallback {
             device.stop()
             bluetoothManager.disconnect(device.peripheral)
         }
-        // 已经不处于认证状态
+        // L'appareil n'est plus en phase d'authentification
         preparingDevice = nil
     }
     
@@ -383,8 +382,8 @@ extension DeviceRepository {
     }
     
     func requireNecessaryInfomation() {
-        // 先获取MTU，以便设置分包大小，然后再获取Capabilities，最后获取其他信息
-        // First of all, require MTU, in order to set max packet size, and then require capabilities, finally other info
+        // D'abord récupérer la MTU pour définir la taille des paquets,
+        // ensuite obtenir les capacités puis les autres informations
         requireMaxPacketSize()
     }
     
@@ -415,13 +414,13 @@ extension DeviceRepository {
             
             if let capabilities = $0 as? DeviceCapacities {
                 if capabilities.supportMultipoint {
-                    // 如果之前保存了地址，则现在发送
+                    // Si une adresse locale a été enregistrée, l'envoyer maintenant
                     if let localBluetoothAddress = UserSettings.localBluetoothAddress {
                         self?.reportLocalBluetoothAddress(localBluetoothAddress) {
                             self?.doneGetNecessaryInfomation()
                         }
                     } else {
-                        // 没有保存则获取
+                        // Sinon, la récupérer auprès de l'appareil
                         self?.requireMultipointInfo()
                     }
                 } else {
@@ -444,20 +443,20 @@ extension DeviceRepository {
                 if endpoints.count == 1 {
                     let localBluetoothAddress = endpoints[0].address
                     UserSettings.localBluetoothAddress = localBluetoothAddress
-                    // 报告给设备
+                    // Rapporter l'adresse à l'appareil
                     self?.reportLocalBluetoothAddress(localBluetoothAddress) {
                         self?.doneGetNecessaryInfomation()
                     }
                 } else {
-                    // 报告不止一个，使用本机地址过滤
+                    // S'il y en a plusieurs, filtrer avec l'adresse locale
                     let filteredEndpoints = endpoints.filter { endpoint in
                         endpoint.bluetoothName.compare(UIDevice.current.name, options: .caseInsensitive) == .orderedSame
                     }
-                    // 如果只有一个，则为本机
+                    // S'il n'en reste qu'un, il s'agit de la machine locale
                     if filteredEndpoints.count == 1 {
                         let localBluetoothAddress = filteredEndpoints[0].address
                         UserSettings.localBluetoothAddress = localBluetoothAddress
-                        // 报告给设备
+                        // Rapporter l'adresse à l'appareil
                         self?.reportLocalBluetoothAddress(localBluetoothAddress) {
                             self?.doneGetNecessaryInfomation()
                         }
@@ -479,7 +478,7 @@ extension DeviceRepository {
             self?.deviceCommManager.unregisterResponseCallable(command: Command.COMMAND_MULTIPOINT)
             
             if let res = result as? TlvResponse,
-               // TODO: 目前直接判断第一个
+               // TODO : pour l'instant on teste simplement le premier élément
                res.first!.value == true {
                 successCompletion()
             } else {
